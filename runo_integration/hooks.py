@@ -148,7 +148,14 @@ app_license = "mit"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
+scheduler_events = {
+    "cron": {
+        "*/15 * * * *": ["runo_integration.api.sync_pending_ai_summaries"]
+    },
+    "daily": [
+        "runo_integration.api.sync_yesterday_calls"
+    ]
+}
 # 	"all": [
 # 		"runo_integration.tasks.all"
 # 	],
