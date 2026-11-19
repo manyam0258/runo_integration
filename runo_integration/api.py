@@ -1,11 +1,11 @@
 import datetime
-import hashlib
 import hmac
 from datetime import timezone
 
 import frappe
 import requests
 from frappe.utils import add_days, convert_utc_to_system_timezone, now_datetime, today
+from frappe.utils.password import get_decrypted_password
 
 RUNO_API_URL = "https://api.runo.in/v1/call/logs"
 RUNO_AI_URL = "https://api.runo.in/v1/call/analysis/result/"
@@ -16,19 +16,38 @@ MIN_DURATION = 10     # seconds; shorter calls have no analysis
 BATCH_SIZE = 30       # keeps the job inside the scheduler's 300s timeout
 
 
+# ---------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------
+
+def _setting(fieldname):
+    """Read a Password field from the Runo Settings single DocType.
+    Reads from the encrypted store directly, so it also works for Guest requests."""
+    return get_decrypted_password(
+        "Runo Settings", "Runo Settings", fieldname, raise_exception=False
+    )
+
+
 def _runo_headers():
-    api_key = frappe.conf.get("runo_api_key")
+    api_key = _setting("api_key")
     if not api_key:
-        frappe.throw("Missing runo_api_key in site_config.json")
+        frappe.throw("Runo API key is not set in Runo Settings")
     return {"Auth-Key": api_key, "Content-Type": "application/json"}
 
 
 def _verify_secret():
     """Reject webhook calls that don't carry our shared secret."""
-    expected = str(frappe.conf.get("runo_webhook_secret") or "")
+    if not frappe.db.get_single_value("Runo Settings", "enabled"):
+        frappe.throw("Runo integration is disabled", frappe.AuthenticationError)
+
+    expected = str(_setting("webhook_secret") or "")
     received = frappe.get_request_header("X-Runo-Secret") or ""
     if not expected or not hmac.compare_digest(expected.encode(), received.encode()):
         frappe.throw("Unauthorized", frappe.AuthenticationError)
+
+    # Secret is valid: run the rest of this request as a trusted user.
+    # Without this, Guest can't read DocType metadata or create the record.
+    frappe.set_user("Administrator")
 
 
 def _get_body():
@@ -89,9 +108,10 @@ def get_ai_summary(call_id):
     return summary or None
 
 
+# ---------------------------------------------------------------
 # 1) LIVE: webhook for same-day calls
 #    URL: /api/method/runo_integration.api.receive_runo_webhook
-
+# ---------------------------------------------------------------
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def receive_runo_webhook():
@@ -120,7 +140,7 @@ def receive_runo_webhook():
     existing = _existing_call(call_id)
     if existing:
         doc = frappe.get_doc("Runo Call Log", existing)
-        doc.update(values)            
+        doc.update(values)              # never touches ai_summary
         doc.save(ignore_permissions=True)
         status = "updated"
     else:
@@ -133,13 +153,15 @@ def receive_runo_webhook():
         try:
             doc.insert(ignore_permissions=True)
             status = "created"
-        except frappe.DuplicateEntryError:   
+        except frappe.DuplicateEntryError:   # webhook retry / race with importer
             status = "duplicate"
 
     return {"status": status}
 
 
+# ---------------------------------------------------------------
 # 2) DAILY: backfill safety net (Runo's API only serves up to yesterday)
+# ---------------------------------------------------------------
 
 @frappe.whitelist()
 def sync_runo_calls(target_date=None):

@@ -1,0 +1,156 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-11-05 11:26:45.998998",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "call_id",
+  "caller_id",
+  "called_by",
+  "start_time",
+  "ai_summary_status",
+  "ai_summary_attempts",
+  "ai_summary_checked_on",
+  "tag",
+  "recording_url",
+  "employee",
+  "department",
+  "column_break_cjcg",
+  "customer_name",
+  "phone_number",
+  "call_type",
+  "duration",
+  "ai_summary",
+  "raw_payload"
+ ],
+ "fields": [
+  {
+   "fieldname": "call_id",
+   "fieldtype": "Data",
+   "label": "Call ID"
+  },
+  {
+   "fieldname": "caller_id",
+   "fieldtype": "Data",
+   "label": "Caller ID"
+  },
+  {
+   "fieldname": "called_by",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Called By"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Datetime",
+   "label": "Start Time"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "ai_summary_status",
+   "fieldtype": "Select",
+   "label": "AI Summary Status",
+   "options": "Pending\nDone\nNot Available\nFailed"
+  },
+  {
+   "default": "0",
+   "fieldname": "ai_summary_attempts",
+   "fieldtype": "Int",
+   "label": "AI Summary Attempts",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ai_summary_checked_on",
+   "fieldtype": "Datetime",
+   "label": "AI Summary Checked On"
+  },
+  {
+   "fieldname": "tag",
+   "fieldtype": "Data",
+   "label": "Tag"
+  },
+  {
+   "fieldname": "recording_url",
+   "fieldtype": "Small Text",
+   "label": "Recording URL"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department"
+  },
+  {
+   "fieldname": "column_break_cjcg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer Name"
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number"
+  },
+  {
+   "fieldname": "call_type",
+   "fieldtype": "Data",
+   "label": "Call Type"
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Duration"
+  },
+  {
+   "fieldname": "ai_summary",
+   "fieldtype": "Text",
+   "label": "AI Summary"
+  },
+  {
+   "fieldname": "raw_payload",
+   "fieldtype": "Code",
+   "label": "Raw Payload"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-19 11:27:48.334414",
+ "modified_by": "Administrator",
+ "module": "Runo",
+ "name": "Runo Call Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
